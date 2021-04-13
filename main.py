@@ -228,7 +228,6 @@ async def move(context):
         await channelTo.send(embed=embedMessage)
 
 
-
 # Convert Image to ASCII: !ascii
 # Gets the picture from the previous image and turns it to ascii art
 @client.command(name='ascii')
