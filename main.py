@@ -174,11 +174,12 @@ async def wbd(context):
 # Used to move messages from one channel to another.
 @client.command(name='move')
 async def move(context):
-
-    if "mod" not in [y.name.lower() for y in context.message.author.roles]:
-        await context.message.delete()
-        await context.channel.send("{} you do not have the permissions to move messages.".format(context.message.author))
-        return
+    # roles = [y.name.lower() for y in context.message.author.roles]
+    # await asyncio.sleep(1)
+    # if "officers" not in roles:
+    #     await context.message.delete()
+    #     await context.channel.send("{} you do not have the permissions to move messages.".format(context.message.author))
+    #     return
 
     # get the content of the message
     content = context.message.content.split(' ')
@@ -186,6 +187,7 @@ async def move(context):
     if len(content) != 3 or not content[2].isnumeric():
         await context.message.channel.send("Incorrect usage of !move. Example: !move {channel to move to} {number of messages}.")
         return
+
     # channel that it is going to be posted to
     channelTo = content[1]
     # get the number of messages to be moved (including the command message)
@@ -200,13 +202,11 @@ async def move(context):
     # invert the list and remove the last message (gets rid of the command message)
     fetchedMessages = fetchedMessages[::-1]
     fetchedMessages = fetchedMessages[:-1]
-    print(fetchedMessages)
+    # get the channel object for the server to send to
+    channelTo = discord.utils.get(fetchedMessages[0].guild.channels, name=channelTo)
 
     # Loop over the messages fetched
     for messages in fetchedMessages:
-        # get the channel object for the server to send to
-        channelTo = discord.utils.get(messages.guild.channels, name=channelTo)
-
         # if the message is embeded already
         if messages.embeds:
             # set the embed message to the old embed object
@@ -272,7 +272,6 @@ async def nick(context):
 
     await context.message.channel.send(embed=embeddedMessage)
 
-
-
 # Run the bot
+
 client.run(os.environ['token'])
