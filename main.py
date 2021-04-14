@@ -22,6 +22,14 @@ async def on_ready():
 async def on_message(message):
     await client.process_commands(message)
 
+@client.event
+async def on_voice_state_update(member, before, after):
+    if member.name == 'Fluff3rNutt3r':
+        if before.channel is None and after.channel is not None:
+            if after.channel.id == 761749968524410881:
+                channel = discord.utils.get(member.guild.channels, name="music-request")
+                channel.send("testing, nothing to see here")
+
 
 # # # # # # # # # # # #
 # Fluff3rBot commands #
