@@ -352,7 +352,7 @@ async def minecraftLogin(context):
     password = context.message.content.split(',')[1]
     try:
         user = User(username=username, password=password)
-        loggedIn = user.AuthenticateUser(username, password)
+        loggedIn = user.AuthenticateUser()
         if loggedIn:
             await member.send("Logged in successfully.")
             with open('AuthenticatedUsers.txt', 'w') as outputFile:
