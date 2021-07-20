@@ -339,7 +339,10 @@ async def nick(context):
 @client.command(name="minecraft-login-request")
 async def minecraftLoginRequest(context):
     member = context.message.author
-    await member.send("To login to login to your account respond with !minecraft-login <username>,<password>")
+    try:
+        await member.send("To login to login to your account respond with !minecraft-login <username>,<password>")
+    except Exception:
+        context.message.channel.send("You made it so that I can not direct message you in your settings.")
 
 
 @client.command(name="minecraft-login")
@@ -349,14 +352,14 @@ async def minecraftLogin(context):
     password = context.message.content.split(',')[1]
     try:
         loggedIn = User.AuthenticateUser(username, password)
+        if loggedIn:
+            member.send("Logged in successfully.")
+            with open('AuthenticatedUsers.txt', 'w') as outputFile:
+                json.dumps({"member": member, "username": username, "password": password})
+        else:
+            member.send("unknown error")
     except Exception as e:
         member.send(e)
-    if loggedIn:
-        member.send("Logged in successfully.")
-        with open('AuthenticatedUsers.txt', 'w') as outputFile:
-            json.dumps({"member": member, "username": username, "password": password})
-    else:
-        member.send("unknown error")
 
 # Run the bot
 client.run(os.environ['token'])
