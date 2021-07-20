@@ -1,14 +1,34 @@
 # bot.py
 import os
 import time
+import json
 import asyncio
 import discord
+from requests import get
+import youtube_dl
 import ImageConvert
+from minecraft.Authenticate import User
 from discord.ext import commands
+
+ytdl_options = {
+    'format': 'bestaudio/best',
+    'postprocessors': [{
+        'key': 'FFmpegExtractAudio',
+        'preferredcodec': 'mp3',
+        'preferredquality': '192',
+    }],
+}
+
+
+def endSong(guild, path):
+    os.remove(path)
 
 
 # Client
 client = commands.Bot(command_prefix='!')
+# Client voice client
+voice_client = None
+
 
 @client.event
 async def on_ready():
@@ -22,18 +42,53 @@ async def on_ready():
 async def on_message(message):
     await client.process_commands(message)
 
+
 @client.event
 async def on_voice_state_update(member, before, after):
-    if member.name == 'Fluff3rNutt3r':
+    #     if member.name == 'Fluff3rNutt3r':
+    #         if before.channel is None and after.channel is not None:
+    #             if after.channel.id == 761749968524410881:
+    #                 voiceChannel = discord.utils.get(member.guild.channels, name="The Dank Tank")
+    #                 voice_client = await voiceChannel.connect()
+
+    #                 with youtube_dl.YoutubeDL(ytdl_options) as ytdl:
+    #                     ytdl.download(["https://www.youtube.com/watch?v=wDgQdr8ZkTw"])
+    #                 for file in os.listdir('./'):
+    #                     if file.endswith(".mp3"):
+    #                         if os.path.exists('song.mp3'):
+    #                             os.remove('song.mp3')
+    #                         os.rename(file, "song.mp3")
+    #                 voice_client.play(discord.FFmpegPCMAudio('song.mp3'), after = lambda x: endSong(member.guild, "song.mp3"))
+    if member.name == 'Some Edgy Name':
         if before.channel is None and after.channel is not None:
             if after.channel.id == 761749968524410881:
-                channel = discord.utils.get(member.guild.channels, name="music-request")
-                channel.send("testing, nothing to see here")
+                voiceChannel = discord.utils.get(
+                    member.guild.channels, name="The Dank Tank")
+                voice_client = await voiceChannel.connect()
+
+                with youtube_dl.YoutubeDL(ytdl_options) as ytdl:
+                    ytdl.download(
+                        ["https://www.youtube.com/watch?v=QzntZLHcYy0"])
+                for file in os.listdir('./'):
+                    if file.endswith(".mp3"):
+                        if os.path.exists('song.mp3'):
+                            os.remove('song.mp3')
+                        os.rename(file, "song.mp3")
+                voice_client.play(discord.FFmpegPCMAudio(
+                    'song.mp3'), after=lambda x: endSong(member.guild, "song.mp3"))
 
 
 # # # # # # # # # # # #
 # Fluff3rBot commands #
 # # # # # # # # # # # #
+
+# Leave command: !begone
+# makes the bot leave the channel
+@client.command(name="begone")
+async def begone(context):
+    voice_client = discord.utils.get(client.voice_clients, guild=context.guild)
+    if voice_client != None:
+        await voice_client.disconnect()
 
 
 # Hello command: !hello
@@ -43,13 +98,11 @@ async def hello(context):
     await context.message.channel.send("Hi")
 
 
-
 # Ping command: !ping
 # pings to make sure the bot is working
 @client.command(name='ping')
 async def ping(context):
     await context.message.channel.send("Ping")
-
 
 
 # Delete Messages: !deleteMessages {number of messages}
@@ -75,7 +128,6 @@ async def deleteMessages(context):
         await messages.delete()
 
 
-
 # Gaming Train: !gaming-train {game name} or !gaming-train {game name} {roles to @}
 # Used to have everyone vote for when they want to play
 @client.command(name='gaming-train')
@@ -96,11 +148,10 @@ async def gamingTrain(context):
         await context.message.channel.send("Incorrect usage of !gaming-train. Example: !gaming-train {game name} or !gaming-train {game name} {roles to @}.")
         return
     # Add the reactions to the message
-    reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟', '🕚', '🕛', '🌞', '🌑']
+    reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣',
+                 '7️⃣', '8️⃣', '9️⃣', '🔟', '🕚', '🕛', '🌞', '🌑']
     for emoji in reactions:
         await msg.add_reaction(emoji)
-    
-
 
 
 # Who'd Be Down: !wbd {game name} or !wbd {game name} {min number of players} or !wbd {game name} {min number of players} {max number of players}
@@ -151,7 +202,7 @@ async def wbd(context):
                 # await context.message.channel.send("Looks like we have enough players.")
                 break
             asyncio.sleep(1)
-        # if the minimum number of players is not hit after 10 mins then break return to avoid the 
+        # if the minimum number of players is not hit after 10 mins then break return to avoid the
         # gaming train
         return
     else:
@@ -175,7 +226,6 @@ async def wbd(context):
     if(len(peopleList) >= 2):
         await context.message.channel.send(peoplePlaying)
         await client.get_command('gaming-train').invoke(context)
-
 
 
 # Move: !move {channel to move to} {number of messages}
@@ -202,7 +252,7 @@ async def move(context):
     numberOfMessages = int(content[2]) + 1
     # get a list of the messages
     fetchedMessages = await context.channel.history(limit=numberOfMessages).flatten()
-    
+
     # delete all of those messages from the channel
     for i in fetchedMessages:
         await i.delete()
@@ -211,7 +261,8 @@ async def move(context):
     fetchedMessages = fetchedMessages[::-1]
     fetchedMessages = fetchedMessages[:-1]
     # get the channel object for the server to send to
-    channelTo = discord.utils.get(fetchedMessages[0].guild.channels, name=channelTo)
+    channelTo = discord.utils.get(
+        fetchedMessages[0].guild.channels, name=channelTo)
 
     # Loop over the messages fetched
     for messages in fetchedMessages:
@@ -223,14 +274,15 @@ async def move(context):
         else:
             # Create embed message object and set content to original
             embedMessage = discord.Embed(
-                        description = messages.content
-                        )
+                description=messages.content
+            )
             # set the embed message author to original author
-            embedMessage.set_author(name=messages.author, icon_url=messages.author.avatar_url)
+            embedMessage.set_author(
+                name=messages.author, icon_url=messages.author.avatar_url)
             # if message has attachments add them
             if messages.attachments:
                 for i in messages.attachments:
-                    embedMessage.set_image(url = i.proxy_url)
+                    embedMessage.set_image(url=i.proxy_url)
 
         # Send to the desired channel
         await channelTo.send(embed=embedMessage)
@@ -255,7 +307,8 @@ async def ConvertToAscii(context):
         messageAttachments = imageMessage.attachments
         for attachment in messageAttachments:
             convertedAsciiImage = ImageConvert.convert(attachment.proxy_url)
-            convertedAsciiImageLarge = ImageConvert.convertLarge(attachment.proxy_url)
+            convertedAsciiImageLarge = ImageConvert.convertLarge(
+                attachment.proxy_url)
             with open("AsciiArt.txt", 'rb') as file:
                 await context.channel.send("Behold:", file=discord.File(file, "AsciiArt.txt"))
             with open("AsciiArtLarge.txt", 'rb') as file:
@@ -267,18 +320,43 @@ async def ConvertToAscii(context):
         return
 
 
-
 # Nicolas: !nicolas
 # sends a picture of Nocials Cage
 @client.command(name='nicolas')
 async def nick(context):
     await context.message.delete()
     embeddedMessage = discord.Embed()
-    embeddedMessage.set_author(name='Nicolas Cage', icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Nicolas_Cage_Deauville_2013.jpg/220px-Nicolas_Cage_Deauville_2013.jpg')
-    embeddedMessage.set_image(url='https://upload.wikimedia.org/wikipedia/commons/f/f3/Nicolas_Cage_-_66%C3%A8me_Festival_de_Venise_%28Mostra%29.jpg')
+    embeddedMessage.set_author(
+        name='Nicolas Cage', icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Nicolas_Cage_Deauville_2013.jpg/220px-Nicolas_Cage_Deauville_2013.jpg')
+    embeddedMessage.set_image(
+        url='https://upload.wikimedia.org/wikipedia/commons/f/f3/Nicolas_Cage_-_66%C3%A8me_Festival_de_Venise_%28Mostra%29.jpg')
 
     await context.message.channel.send(embed=embeddedMessage)
 
-# Run the bot
+# Minecraft Authenticate: !minecraft-login-request
 
+
+@client.command(name="minecraft-login-request")
+async def minecraftLoginRequest(context):
+    member = context.message.author
+    await member.send("To login to login to your account respond with !minecraft-login <username>,<password>")
+
+
+@client.command(name="minecraft-login")
+async def minecraftLogin(context):
+    member = context.message.author
+    username = context.message.content.split(',')[0]
+    password = context.message.content.split(',')[1]
+    try:
+        loggedIn = User.AuthenticateUser(username, password)
+    except Exception as e:
+        member.send(e)
+    if loggedIn:
+        member.send("Logged in successfully.")
+        with open('AuthenticatedUsers.txt', 'w') as outputFile:
+            json.dumps({"member": member, "username": username, "password": password})
+    else:
+        member.send("unknown error")
+
+# Run the bot
 client.run(os.environ['token'])
