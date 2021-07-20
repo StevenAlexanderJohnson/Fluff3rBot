@@ -20,17 +20,17 @@ class User:
     def __init__(self, username, password):
         self.username = username
         self.password = password
-        self.AuthenticateUser(username, password)
+        # self.AuthenticateUser(username, password)
 
-    def AuthenticateUser(self, username, password):
+    def AuthenticateUser(self):
         # Create the body payload to pass in the http request.
         payload = {
             "agent": {
                 "name": "Minecraft",
                 "version": 1
             },
-            "username": username,
-            "password": password,
+            "username": self.username,
+            "password": self.password,
             "clientToken": "default",
             "requestUser": True
         }
