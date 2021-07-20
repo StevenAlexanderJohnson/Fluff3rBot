@@ -342,7 +342,7 @@ async def minecraftLoginRequest(context):
     try:
         await member.send("To login to login to your account respond with !minecraft-login <username>,<password>")
     except Exception:
-        context.message.channel.send("You made it so that I can not direct message you in your settings.")
+        await context.message.channel.send("You made it so that I can not direct message you in your settings.")
 
 
 @client.command(name="minecraft-login")
@@ -353,7 +353,7 @@ async def minecraftLogin(context):
     try:
         loggedIn = User.AuthenticateUser(username, password)
         if loggedIn:
-            member.send("Logged in successfully.")
+            await member.send("Logged in successfully.")
             with open('AuthenticatedUsers.txt', 'w') as outputFile:
                 json.dumps({"member": member, "username": username, "password": password})
         else:

@@ -41,7 +41,7 @@ class User:
         if 'error' in response.text:
             raise Exception(json.loads(response.text)['errorMessage'])
         else:
-            return True;
+            return True
 
     def Signout(self):
         payload = {
