@@ -357,9 +357,9 @@ async def minecraftLogin(context):
             with open('AuthenticatedUsers.txt', 'w') as outputFile:
                 json.dumps({"member": member, "username": username, "password": password})
         else:
-            member.send("unknown error")
+            await member.send("unknown error")
     except Exception as e:
-        member.send(e)
+        await member.send(e)
 
 # Run the bot
 client.run(os.environ['token'])
